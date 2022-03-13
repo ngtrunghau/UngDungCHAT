@@ -1,0 +1,196 @@
+package client;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import dao.Mypublic;
+
+public class clientframe extends JFrame{
+	private JLabel lbl = new JLabel();
+	private JTextArea ta_chat = new JTextArea(30,50);
+	private JTextField tf_chat = new JTextField();
+	private JButton b_send = new JButton("Gửi");
+	private JScrollPane jsp = new JScrollPane();
+	private JButton b_logout = new JButton("Đăng xuất");
+	
+	
+	private String username =Mypublic.lastEntry().getValue();
+	private String address = Mypublic.server_address;
+	
+    ArrayList<String> users = new ArrayList();
+    int port = 2222;
+     
+    Socket sock;
+    BufferedReader reader;
+    PrintWriter writer;
+	
+	public clientframe()
+	{
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.gridx=0;
+        gbc.gridy=0;
+        gbc.weightx=1;
+        gbc.weighty=1;
+        gbc.fill=GridBagConstraints.BOTH;
+        
+        lbl.setText("Xin chào: "+username);
+        add(lbl,gbc);
+        
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+        gbc.gridx=GridBagConstraints.RELATIVE;
+        gbc.gridy=0;
+        add(b_logout,gbc);
+        
+        jsp.setViewportView(ta_chat);
+        gbc.gridx=GridBagConstraints.RELATIVE; // x = 0
+        gbc.gridy=GridBagConstraints.RELATIVE; // y = 1
+        add(jsp,gbc);
+        
+        tf_chat.setColumns(30);
+        gbc.gridwidth=GridBagConstraints.RELATIVE;// để button nằm ở cuối hàng
+        add(tf_chat,gbc); // x=0; y =2
+        
+        
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+        gbc.gridy=2;// nằm cùng hàng với jtextfiled
+        add(b_send,gbc);
+        
+        
+        try 
+        {
+            sock = new Socket(address, port);
+            InputStreamReader streamreader = new InputStreamReader(sock.getInputStream());
+            reader = new BufferedReader(streamreader);
+            writer = new PrintWriter(sock.getOutputStream());
+            writer.println(username + ":đã kết nối.:Connect");
+            writer.flush(); 
+        } 
+        catch (Exception ex) 
+        {
+            ta_chat.append("Không thể kết nối! Hãy thử lại. \n");
+        }
+        
+        ListenThread();
+        
+        
+        b_send.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+		        String nothing = "";
+		        if ((tf_chat.getText()).equals(nothing)) {
+		            tf_chat.setText("");
+		            tf_chat.requestFocus();
+		        } else {
+		            try {
+		               writer.println(username + ":" + tf_chat.getText() + ":" + "Chat");
+		               writer.flush(); // flushes the buffer
+		            } catch (Exception ex) {
+		                ta_chat.append("Tin nhắn không được gửi. \n");
+		            }
+		            tf_chat.setText("");
+		            tf_chat.requestFocus();
+		        }
+
+		        tf_chat.setText("");
+		        tf_chat.requestFocus();
+			}
+		});
+        
+        b_logout.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+			   sendDisconnect();
+		       Disconnect();
+			}
+		});
+	}
+	    
+	    //--------------------------//
+	    
+	    public void ListenThread() 
+	    {
+	         Thread IncomingReader = new Thread(new IncomingReader());
+	         IncomingReader.start();
+	    }
+	    
+	    
+	    //--------------------------//
+	    
+	    public void sendDisconnect() 
+	    {
+	        String bye = (username + ": :Disconnect");
+	        try
+	        {
+	            writer.println(bye); 
+	            writer.flush(); 
+	        } catch (Exception e) 
+	        {
+	            ta_chat.append("Không thể gửi tín hiệu ngắt kết nối.\n");
+	        }
+	    }
+
+	    //--------------------------//
+	    
+	    public void Disconnect() 
+	    {
+	        try 
+	        {
+	            ta_chat.append("Thoát.\n");
+	            Mypublic.removeUser(username);
+	            sock.close();
+	            System.exit(0);
+	            LoginApplication loginGui = new LoginApplication();// chạy lại dialog đăng nhập
+	        } catch(Exception ex) {
+	            ta_chat.append("Lỗi thoát. \n");
+	        }
+	    }
+	    public class IncomingReader implements Runnable// dữ liệu đc gửi từ server qua từ hàm telleveryone
+	    {
+	        @Override
+	        public void run() 
+	        {
+	            String[] data;
+	            String stream, connect = "Connect", chat = "Chat";
+
+	            try 
+	            {
+	                while ((stream = reader.readLine()) != null) // đọc dữ liệu từ reader của socket
+	                {
+	                     data = stream.split(":");
+	                     // data[0]= tên user
+	                     // data[1]= nội dung chat
+
+	                     if (data[2].equals(chat)) // nếu tín hiệu nhận đc từ server là chat = > hiển thị tên text area
+	                     {
+	                        ta_chat.append(data[0] + ": " + data[1] + "\n");
+	                        ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
+	                     } 
+	                     else if (data[2].equals(connect))
+	                     {
+	                        ta_chat.removeAll();
+	                     } 
+	                }
+	           }catch(Exception ex) { }
+	        }
+	    }
+}

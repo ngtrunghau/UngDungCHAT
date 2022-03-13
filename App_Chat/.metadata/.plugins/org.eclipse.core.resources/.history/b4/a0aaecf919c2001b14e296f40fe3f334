@@ -1,0 +1,24 @@
+package server;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+public class topleft extends JPanel{
+    private JButton b_end = new JButton("Dừng");
+    private JButton b_start= new JButton("Bắt đầu");
+    
+    public topleft()
+    {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.gridx=0;
+        gbc.gridy=0;
+        
+        
+    }
+    
+}

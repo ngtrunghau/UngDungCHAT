@@ -1,0 +1,60 @@
+package server;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+public class topright extends JPanel {
+	 private JButton btnUserOnline, btnClear;
+	 GridBagConstraints gbc = new GridBagConstraints();
+	public topright() {
+		setLayout(new GridBagLayout());
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(3, 5, 3, 5);
+		
+		//2 button
+		
+		
+		JPanel pButtons = new JPanel(new GridBagLayout());
+		btnUserOnline = new JButton("Người dùng đang online");				
+		 addGB(pButtons, btnUserOnline, 1, 0, GridBagConstraints.BOTH, 1.0, 1.0);
+		 
+		 
+		btnClear = new JButton("Dọn");
+		addGB(this, pButtons, 0, 4, GridBagConstraints.BOTH, 1.0, 1.0);
+		
+		//
+		
+		
+	}
+	
+    public JButton get_b_users()
+    {
+    	return this.btnUserOnline;
+    }
+    
+    public JButton get_b_clear()
+    {
+    	return this.btnClear;
+    }
+	void addGB(Container cont, Component comp, int x, int y, int fillType, double weightx, double weighty) {
+		
+		gbc.gridx = x;
+		gbc.gridy = y;
+		gbc.fill = fillType;
+		gbc.weightx = weightx;
+		gbc.weighty = weighty;
+		cont.add(comp, gbc);
+	}
+
+
+}

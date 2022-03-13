@@ -1,0 +1,37 @@
+package server;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+
+import javax.swing.JButton;
+
+public class topright extends JPanel {
+    private JButton b_users = new JButton("Người dùng đang online");
+    private JButton b_clear= new JButton("Dọn");
+    
+    public topright()
+    {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.gridx=0;
+        gbc.gridy=0;
+        
+        add(b_end,gbc);
+        
+        gbc.gridx=GridBagConstraints.RELATIVE;
+        gbc.gridy=0;
+        
+        add(b_start,gbc);
+    }
+    
+    public JButton get_b_end()
+    {
+    	return this.b_end;
+    }
+    
+    public JButton get_b_start()
+    {
+    	return this.b_end;
+    }
+}

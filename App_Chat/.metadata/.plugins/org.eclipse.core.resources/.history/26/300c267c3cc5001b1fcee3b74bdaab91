@@ -1,0 +1,28 @@
+import java.awt.BorderLayout;
+
+import javax.swing.JFrame;
+
+import java.awt.EventQueue;
+
+public class DangKiTK {
+
+	private static JFrame myApp = new JFrame("Đăng kí tài khoản");
+	
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					myApp.add(new DangKiGUI(), BorderLayout.CENTER);
+					myApp.setBounds(400, 200, 500, 230);
+					myApp.setVisible(true);
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+				
+			}
+		});
+	}
+
+}

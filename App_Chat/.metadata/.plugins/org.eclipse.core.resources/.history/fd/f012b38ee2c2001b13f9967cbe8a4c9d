@@ -1,0 +1,196 @@
+package server;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+public class serverframe extends JFrame{
+	JTextArea ta_chat = new JTextArea(30,5);
+	topleft top_left = new topleft();
+	topright top_right = new topright();
+	JScrollPane jsp = new JScrollPane();
+    ArrayList clientOutputStreams;
+    ArrayList<String> users;
+	///// tổng hợp layout
+	public serverframe()
+	{
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.gridx=0;
+        gbc.gridy=0;
+        gbc.weightx=1;
+        gbc.fill=GridBagConstraints.BOTH;
+        gbc.weighty=1;
+        // thêm nhánh top left
+        add(top_left,gbc);
+        
+        gbc.gridx=GridBagConstraints.RELATIVE;
+        gbc.gridy=GridBagConstraints.RELATIVE;
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+
+        // thêm nhánh top right
+        add(top_right,gbc);
+        
+        jsp.setViewportView(ta_chat);
+        gbc.gridy=1;
+        gbc.gridwidth=GridBagConstraints.NONE;
+        add(jsp,gbc);
+        
+   	 
+   	 
+        top_left.get_b_start().addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent evt) {
+	                Thread starter = new Thread(new ServerStart());
+	                starter.start();
+	                
+	                ta_chat.append("Server đã chạy...\n");
+	            }
+	        });
+        top_left.get_b_end().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                try 
+                {
+                    Thread.sleep(2000);                 //5000 milliseconds is five second.
+                } 
+                catch(InterruptedException ex) {Thread.currentThread().interrupt();}
+                
+                tellEveryone("Server:đang dừng và tất cả các user sẽ bị ngắt kết nối.\n:Chat");
+                ta_chat.append("Server dừng... \n");
+                
+                ta_chat.setText("");
+            }
+        });
+	}
+	// tạo lớp clienthandler để nhận socket từ client
+	public class ClientHandler implements Runnable	// nhận socket từ client
+    {
+       BufferedReader reader;
+       Socket sock;
+       PrintWriter client;
+
+       public ClientHandler(Socket clientSocket, PrintWriter user) 
+       {
+            client = user;
+            try 
+            {
+                sock = clientSocket;
+                InputStreamReader isReader = new InputStreamReader(sock.getInputStream());// socket đọc được gì
+                reader = new BufferedReader(isReader);// sử dụng reader để đọc dữ liệu từ socket của client
+            }
+            catch (Exception ex) 
+            {
+                ta_chat.append("Lỗi không xác định... \n");
+            }
+
+       }
+
+       public void run() 
+       {
+            String message, connect = "Connect", disconnect = "Disconnect", chat = "Chat" ;
+            String[] data;
+
+            try 
+            {
+                while ((message = reader.readLine()) != null) // đọc dữ liệu từ socket
+                	// khi ấn vào nút send sẽ gửi chuỗi kèm với từ "chat"
+                {
+                    ta_chat.append("Đã nhận: " + message + "\n");// nhận được message từ client
+                    data = message.split(":");
+                    
+                    for (String token:data) 
+                    {
+                        ta_chat.append(token + "\n");
+                    }
+
+                    if (data[2].equals(connect)) 
+                    {
+                        tellEveryone((data[0] + ":" + data[1] + ":" + chat));// gửi dữ liệu là chat đến các client
+                      //  userAdd(data[0]);
+                    } 
+                    else if (data[2].equals(disconnect)) 
+                    {
+                        tellEveryone((data[0] + ":đã kết nối." + ":" + chat));
+                       // userRemove(data[0]);
+                    } 
+                    else if (data[2].equals(chat)) 
+                    {
+                        tellEveryone(message);
+                    } 
+                    else 
+                    {
+                        ta_chat.append("Không có điều kiện nào được đáp ứng. \n");
+                    }
+                } 
+             } 
+             catch (Exception ex) 
+             {
+                ta_chat.append("Mất kết nối. \n");
+                ex.printStackTrace();
+                clientOutputStreams.remove(client);
+             } 
+       	} 
+	 }
+	 public class ServerStart implements Runnable 
+	 {
+        public void run() 
+        {
+            clientOutputStreams = new ArrayList();
+            users = new ArrayList();  
+
+            try 
+            {
+                ServerSocket serverSock = new ServerSocket(2222);
+
+                while (true) // luôn lắng nghe client từ port 2222
+                {
+					Socket clientSock = serverSock.accept();
+					PrintWriter writer = new PrintWriter(clientSock.getOutputStream());
+					clientOutputStreams.add(writer);
+	
+					Thread listener = new Thread(new ClientHandler(clientSock, writer));// socket đã được gắn kết
+					// có dữ liệu là nó tự xử lý
+					listener.start();// gọi hàm run của thread
+					ta_chat.append("Nhận được một kết nối. \n");
+                }
+            }
+            catch (Exception ex)
+            {
+                ta_chat.append("Lỗi nhận kết nối. \n");
+            }
+        }
+    }
+	 public void tellEveryone(String message) 
+     {
+		Iterator it = clientOutputStreams.iterator();
+
+        while ((it).hasNext()) 
+        {
+            try 
+            {
+                PrintWriter writer = (PrintWriter) it.next();
+                writer.println(message);
+                ta_chat.append("Sending: " + message + "\n");
+                writer.flush();
+                ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
+
+            } 
+            catch (Exception ex) 
+            {
+            	ta_chat.append("Error telling everyone. \n");
+            }
+        } 
+   } 
+}

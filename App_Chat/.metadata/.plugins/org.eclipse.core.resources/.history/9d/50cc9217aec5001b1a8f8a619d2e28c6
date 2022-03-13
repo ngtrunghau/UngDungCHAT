@@ -1,0 +1,27 @@
+package dao;
+
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class MessageDao {
+    public static void Insert(String noidung, String taikhoan) {
+    	LocalDateTime myDateObj = LocalDateTime.now();
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String formattedDate = myDateObj.format(myFormatObj);
+    	try {
+            // connnect to database 'DOANJAVA'
+            Connection conn = Mypublic.getConnection();
+            String sql = "insert into TINNHAN(noidung,thoigian,taikhoan) values (N'"+noidung+"','" +formattedDate+"','"+taikhoan+"')";
+            // create statement
+            PreparedStatement stmt = conn.prepareStatement(sql,PreparedStatement.RETURN_GENERATED_KEYS);
+            // insert data to table 'TINNHAN'
+            stmt.execute();
+            conn.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}

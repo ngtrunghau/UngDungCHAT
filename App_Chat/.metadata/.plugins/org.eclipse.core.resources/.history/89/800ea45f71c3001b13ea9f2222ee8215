@@ -1,0 +1,8 @@
+package dao;
+
+public class ConnectToDatabase {
+    private static String DB_URL = "jdbc:sqlserver://localhost:1433;"
+            + "databaseName=MULTICASTING;";
+    private static String USER_NAME = "admin";
+    private static String PASSWORD = "admin";
+}

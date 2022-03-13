@@ -1,0 +1,26 @@
+package client;
+import java.awt.BorderLayout;
+
+import javax.swing.JFrame;
+
+
+public class LoginApplication extends JFrame{
+	private GUILogin guiLogin;
+	
+	public LoginApplication(String appName) {
+		super(appName);
+		guiLogin = new GUILogin();
+		this.add(guiLogin, BorderLayout.CENTER); 
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultLookAndFeelDecorated(true);
+		setVisible(true);
+		setSize(480,240);
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		LoginApplication login = new LoginApplication("Login");
+	}
+
+}

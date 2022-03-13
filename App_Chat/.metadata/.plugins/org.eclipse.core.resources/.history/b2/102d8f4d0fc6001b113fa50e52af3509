@@ -1,0 +1,37 @@
+package client;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import javax.swing.JFrame;
+
+
+public class LoginApplication extends JFrame{
+	private GUILogin guiLogin;
+	
+	public LoginApplication(String appName) {
+		super(appName);
+		guiLogin = new GUILogin();
+		this.add(guiLogin, BorderLayout.CENTER); 
+		
+		Toolkit toolkit = Toolkit.getDefaultToolkit();  
+		Dimension screenSize = toolkit.getScreenSize();  
+		setSize(400,600);
+		  
+		//Calculate the frame location  
+		int x = (screenSize.width - this.getWidth()) / 2;  
+		int y = (screenSize.height - this.getHeight()) / 2;  
+		  
+		//Set the new frame location  
+		this.setLocation(x, y); 
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultLookAndFeelDecorated(true);
+		setVisible(true);
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		LoginApplication login = new LoginApplication("Login");
+	}
+
+}

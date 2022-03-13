@@ -1,0 +1,224 @@
+package client;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import dao.Mypublic;
+
+public class clientframe extends JFrame{
+	private JLabel lbl = new JLabel();
+	private JTextArea ta_chat = new JTextArea(30,10);
+	private JTextField tf_chat = new JTextField();
+	private JButton b_send = new JButton("Gửi");
+	private JScrollPane jsp = new JScrollPane();
+	
+	
+	String username =Mypublic.USER_NAME, address = Mypublic.server_address;
+    ArrayList<String> users = new ArrayList();
+    int port = 2222;
+     
+    Socket sock;
+    BufferedReader reader;
+    PrintWriter writer;
+	
+	public clientframe()
+	{
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.gridx=0;
+        gbc.gridy=0;
+        gbc.weightx=1;
+        gbc.weighty=1;
+        gbc.fill=GridBagConstraints.BOTH;
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+        
+        lbl.setText("Xin chào: "+Mypublic.USER_NAME);
+        add(lbl,gbc);
+        
+        jsp.setViewportView(ta_chat);
+        gbc.gridx=GridBagConstraints.RELATIVE; // x = 0
+        gbc.gridy=GridBagConstraints.RELATIVE; // y = 1
+        add(jsp,gbc);
+        
+        gbc.gridx=GridBagConstraints.RELATIVE;
+        gbc.gridy=2;
+        gbc.gridwidth=GridBagConstraints.NONE;
+        add(tf_chat,gbc);
+        
+        gbc.gridx=GridBagConstraints.VERTICAL;
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+        gbc.gridx=GridBagConstraints.RELATIVE;
+        gbc.gridy=2;
+        add(b_send,gbc);
+        
+        try 
+        {
+            sock = new Socket(address, port);
+            InputStreamReader streamreader = new InputStreamReader(sock.getInputStream());
+            reader = new BufferedReader(streamreader);
+            writer = new PrintWriter(sock.getOutputStream());
+            writer.println(username + ":has connected.:Connect");
+            writer.flush(); 
+        } 
+        catch (Exception ex) 
+        {
+            ta_chat.append("Cannot Connect! Try Again. \n");
+        }
+        
+        ListenThread();
+        
+        
+        b_send.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+		        String nothing = "";
+		        if ((tf_chat.getText()).equals(nothing)) {
+		            tf_chat.setText("");
+		            tf_chat.requestFocus();
+		        } else {
+		            try {
+		               writer.println(username + ":" + tf_chat.getText() + ":" + "Chat");
+		               writer.flush(); // flushes the buffer
+		            } catch (Exception ex) {
+		                ta_chat.append("Tin nhắn không được gửi. \n");
+		            }
+		            tf_chat.setText("");
+		            tf_chat.requestFocus();
+		        }
+
+		        tf_chat.setText("");
+		        tf_chat.requestFocus();
+			}
+		});
+	}
+	    
+	    //--------------------------//
+	    
+	    public void ListenThread() 
+	    {
+	         Thread IncomingReader = new Thread(new IncomingReader());
+	         IncomingReader.start();
+	    }
+	    
+	    //--------------------------//
+	    
+	    public void userAdd(String data) 
+	    {
+	         users.add(data);
+	    }
+	    
+	    //--------------------------//
+	    
+	    public void userRemove(String data) 
+	    {
+	         ta_chat.append(data + " is now offline.\n");
+	    }
+	    
+	    //--------------------------//
+	    
+	    public void writeUsers() 
+	    {
+	         String[] tempList = new String[(users.size())];
+	         users.toArray(tempList);
+	         for (String token:tempList) 
+	         {
+	             //users.append(token + "\n");
+	         }
+	    }
+	    
+	    //--------------------------//
+	    
+	    public void sendDisconnect() 
+	    {
+	        String bye = (username + ": :Disconnect");
+	        try
+	        {
+	            writer.println(bye); 
+	            writer.flush(); 
+	        } catch (Exception e) 
+	        {
+	            ta_chat.append("Could not send Disconnect message.\n");
+	        }
+	    }
+
+	    //--------------------------//
+	    
+	    public void Disconnect() 
+	    {
+	        try 
+	        {
+	            ta_chat.append("Disconnected.\n");
+	            sock.close();
+	        } catch(Exception ex) {
+	            ta_chat.append("Failed to disconnect. \n");
+	        }
+	    }
+	    public class IncomingReader implements Runnable// dữ liệu đc gửi từ server qua
+	    {
+	        @Override
+	        public void run() 
+	        {
+	            String[] data;
+	            String stream, done = "Done", connect = "Connect", disconnect = "Disconnect", chat = "Chat";
+
+	            try 
+	            {
+	                while ((stream = reader.readLine()) != null) // đọc dữ liệu từ reader của socket
+	                {
+	                     data = stream.split(":");
+
+	                     if (data[2].equals(chat)) 
+	                     {
+	                        ta_chat.append(data[0] + ": " + data[1] + "\n");
+	                        ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
+	                     } 
+	                     else if (data[2].equals(connect))
+	                     {
+	                        ta_chat.removeAll();
+	                        userAdd(data[0]);
+	                     } 
+	                     else if (data[2].equals(disconnect)) 
+	                     {
+	                         userRemove(data[0]);
+	                     } 
+	                     else if (data[2].equals(done)) 
+	                     {
+	                        //users.setText("");
+	                        writeUsers();
+	                        users.clear();
+	                     }
+	                }
+	           }catch(Exception ex) { }
+	        }
+	    }
+	    public static void main(String args[]) 
+	    {
+	        java.awt.EventQueue.invokeLater(new Runnable() 
+	        {
+	            @Override
+	            public void run() 
+	            {
+	            	clientframe cf= new clientframe();
+	                cf.pack();
+	                cf.setVisible(true);
+	            }
+	        });
+	    }
+}

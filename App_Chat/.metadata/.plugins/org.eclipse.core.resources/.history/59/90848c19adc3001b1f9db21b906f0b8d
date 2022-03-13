@@ -1,0 +1,21 @@
+package model;
+
+public class taikhoan {
+	private String taikhoan;
+	private String matkhau;
+	
+	public taikhoan()
+	{
+		taikhoan="";
+		matkhau="";
+	}
+	
+	public String getTaiKhoan()
+	{
+		return taikhoan;
+	}
+	public String getMatKhau()
+	{
+		return matkhau;
+	}
+}

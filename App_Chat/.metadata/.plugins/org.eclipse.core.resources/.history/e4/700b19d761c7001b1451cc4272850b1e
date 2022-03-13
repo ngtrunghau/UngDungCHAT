@@ -1,0 +1,29 @@
+package model;
+
+public class taikhoan {
+	private String taikhoan;
+	private String matkhau;
+	
+	public taikhoan()
+	{
+		taikhoan="";
+		matkhau="";
+	}
+	
+	public String getTaiKhoan()
+	{
+		return taikhoan;
+	}
+	public String getMatKhau()
+	{
+		return matkhau;
+	}
+	public void setTaiKhoan(String taikhoan)
+	{
+		this.taikhoan=taikhoan;
+	}
+	public void setMatKhau(String matkhau)
+	{
+		this.matkhau=matkhau;
+	}
+}

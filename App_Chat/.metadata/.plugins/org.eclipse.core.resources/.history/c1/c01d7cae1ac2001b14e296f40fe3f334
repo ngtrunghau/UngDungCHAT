@@ -1,0 +1,45 @@
+package server;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+public class topleft extends JPanel{
+    private JButton b_end = new JButton("Dừng");
+    private JButton b_start= new JButton("Bắt đầu");
+    
+    ArrayList clientOutputStreams;
+    ArrayList<String> users;
+    
+    public topleft()
+    {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.gridx=0;
+        gbc.gridy=0;
+        
+        add(b_end,gbc);
+        
+        gbc.gridx=GridBagConstraints.RELATIVE;
+        gbc.gridy=0;
+        
+        add(b_start,gbc);
+    }
+    
+    public JButton get_b_end()
+    {
+    	return this.b_end;
+    }
+    
+    public JButton get_b_start()
+    {
+    	return this.b_end;
+    }
+}
